@@ -2,8 +2,8 @@
    CONFIGURATION - KẾT NỐI ĐẾN SERVER
    =========================== */
 const CONFIG = {
-    SSE_URL: 'https://webquantrac.onrender.com/sse',
-    API_BASE_URL: 'https://webquantrac.onrender.com/api',
+    SSE_URL: 'https://iot-1-un07.onrender.com/sse',
+    API_BASE_URL: 'https://iot-1-un07.onrender.com/api',
     MAX_RECONNECT_ATTEMPTS: 10,
     MAX_POINTS: 40,
     MAX_HISTORY: 200
