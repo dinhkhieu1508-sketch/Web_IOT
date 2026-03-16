@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Hệ Thống Quan Trắc Môi Trường - ESP32</title>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-theme="light">
+    <header class="topbar">
+        <div class="title">HỆ THỐNG QUAN TRẮC MÔI TRƯỜNG - ESP32</div>
+        <div class="controls">
+            <div class="controls-panel" role="region" aria-label="controls">
+                <label class="muted">PM1.0:</label>
+                <input id="thr-pm1" class="threshold-input" type="number" min="0" value="25" title="Ngưỡng cảnh báo PM1.0" />
+                <label class="muted">PM2.5:</label>
+                <input id="thr-pm25" class="threshold-input" type="number" min="0" value="35" title="Ngưỡng cảnh báo PM2.5" />
+                <label class="muted">PM10:</label>
+                <input id="thr-pm10" class="threshold-input" type="number" min="0" value="50" title="Ngưỡng cảnh báo PM10" />
+                <label class="muted">CO₂:</label>
+                <input id="thr-co2" class="threshold-input" type="number" min="0" value="2000" title="Ngưỡng cảnh báo CO₂" />
+                <button id="save-thr" class="btn" title="Lưu ngưỡng cảnh báo">Lưu</button>
+                <button id="toggle-theme" class="btn secondary" title="Chuyển đổi chế độ sáng/tối">🌙</button>
+                <div class="time-display" id="current-time">--:--:--</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="alert-bar"></div>
+
+        <!-- top cards - organized in 2 rows -->
+        <section class="grid" aria-label="sensor cards">
+            <!-- Row 1: Temperature, Humidity, CO2 -->
+            <div class="card" id="card-temp">
+                <div class="name">🌡️ Nhiệt độ</div>
+                <div class="value" id="temp">-- °C</div>
+                <div class="meta">Cập nhật: <span id="temp-time">--</span> ・ Tuổi: <span id="temp-age">--</span>s</div>
+                <canvas id="spark-temp" class="sparkline"></canvas>
+            </div>
+
+            <div class="card" id="card-hum">
+                <div class="name">💧 Độ ẩm</div>
+                <div class="value" id="hum">-- %</div>
+                <div class="meta">Cập nhật: <span id="hum-time">--</span> ・ Tuổi: <span id="hum-age">--</span>s</div>
+                <canvas id="spark-hum" class="sparkline"></canvas>
+            </div>
+
+            <div class="card" id="card-co2">
+                <div class="name">☁️ CO₂</div>
+                <div class="value" id="CO2">-- ppm</div>
+                <div class="meta">Cập nhật: <span id="CO2-time">--</span> ・ Tuổi: <span id="CO2-age">--</span>s</div>
+                <canvas id="spark-co2" class="sparkline"></canvas>
+            </div>
+
+            <!-- Row 2: PM1.0, PM2.5, PM10 -->
+            <div class="card" id="card-pm1">
+                <div class="name">🌫️ PM1.0 (siêu mịn)</div>
+                <div class="value" id="pm1">-- µg/m³</div>
+                <div class="meta">Cập nhật: <span id="pm1-time">--</span> ・ Tuổi: <span id="pm1-age">--</span>s</div>
+                <canvas id="spark-pm1" class="sparkline"></canvas>
+            </div>
+
+            <div class="card" id="card-pm25">
+                <div class="name">🌫️ PM2.5 (mịn)</div>
+                <div class="value" id="pm25">-- µg/m³</div>
+                <div class="meta">Cập nhật: <span id="pm25-time">--</span> ・ Tuổi: <span id="pm25-age">--</span>s</div>
+                <canvas id="spark-pm25" class="sparkline"></canvas>
+            </div>
+
+            <div class="card" id="card-pm10">
+                <div class="name">🌫️ PM10 (thô)</div>
+                <div class="value" id="pm10">-- µg/m³</div>
+                <div class="meta">Cập nhật: <span id="pm10-time">--</span> ・ Tuổi: <span id="pm10-age">--</span>s</div>
+                <canvas id="spark-pm10" class="sparkline"></canvas>
+            </div>
+        </section>
+
+        <!-- charts -->
+        <section class="charts">
+            <div class="card chart-card">
+                <div class="name">📈 Biểu đồ Nhiệt độ</div>
+                <canvas id="chart-temp" style="height:220px"></canvas>
+            </div>
+            <div class="card chart-card">
+                <div class="name">📈 Biểu đồ Độ ẩm</div>
+                <canvas id="chart-hum" style="height:220px"></canvas>
+            </div>
+
+            <div class="card chart-card">
+                <div class="name">📈 Biểu đồ PM1.0</div>
+                <canvas id="chart-pm1" style="height:220px"></canvas>
+            </div>
+            <div class="card chart-card">
+                <div class="name">📈 Biểu đồ PM2.5</div>
+                <canvas id="chart-pm25" style="height:220px"></canvas>
+            </div>
+
+            <div class="card chart-card">
+                <div class="name">📈 Biểu đồ PM10</div>
+                <canvas id="chart-pm10" style="height:220px"></canvas>
+            </div>
+            <div class="card chart-card">
+                <div class="name">📈 Biểu đồ CO₂</div>
+                <canvas id="chart-co2" style="height:220px"></canvas>
+            </div>
+
+            <div class="card big-chart" style="grid-column:1 / -1;">
+                <div class="name">📊 Biểu đồ Tổng Hợp (Bụi Mịn)</div>
+                <canvas id="chart-combined" style="height:320px"></canvas>
+            </div>
+        </section>
+
+        <!-- history -->
+        <section class="history" aria-label="history">
+            <div class="history-header">
+                <div style="font-weight:700">📋 Bảng Lịch Sử (mới nhất ở trên)</div>
+                <input id="search" placeholder="🔍 Tìm kiếm timestamp..." style="margin-left:12px;padding:8px;border-radius:8px;border:1px solid var(--glass-2);flex:1" />
+                <button id="clear-history" class="btn secondary">🗑️ Xóa lịch sử</button>
+            </div>
+
+            <div style="overflow:auto">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Temp (°C)</th>
+                            <th>Hum (%)</th>
+                            <th>PM1.0 (µg/m³)</th>
+                            <th>PM2.5 (µg/m³)</th>
+                            <th>PM10 (µg/m³)</th>
+                            <th>CO₂ (ppm)</th>
+                            <th>Temp age (s)</th>
+                            <th>Hum age (s)</th>
+                            <th>PM1.0 age (s)</th>
+                            <th>PM2.5 age (s)</th>
+                            <th>PM10 age (s)</th>
+                            <th>CO₂ age (s)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        © Hệ thống quan trắc — Dữ liệu realtime từ ESP32 → HiveMQ → Node.js → MongoDB Atlas
+    </footer>
+
+    <!-- audio for alert -->
+    <audio id="alert-sound">
+        <source src="https://actions.google.com/sounds/v1/alarms/medium_bell_ringing_near.ogg" type="audio/ogg">
+        <source src="https://actions.google.com/sounds/v1/alarms/medium_bell_ringing_near.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- JavaScript Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/sse.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
