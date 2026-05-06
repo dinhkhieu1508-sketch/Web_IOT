@@ -36,7 +36,22 @@ const UI = {
     thrPM10Input: document.getElementById('thr-pm10'),
     thrCO2Input: document.getElementById('thr-co2'),
     saveThrBtn: document.getElementById('save-thr'),
-    toggleThemeBtn: document.getElementById('toggle-theme')
+    toggleThemeBtn: document.getElementById('toggle-theme'),
+    // Trạng thái thiết bị
+    statusDot: document.getElementById('status-dot'),
+    statusLabel: document.getElementById('status-label'),
+    // AQI
+    aqiBanner: document.getElementById('aqi-banner'),
+    aqiIcon: document.getElementById('aqi-icon'),
+    aqiLabel: document.getElementById('aqi-label'),
+    aqiDetail: document.getElementById('aqi-detail'),
+    // Easy badges (thân thiện với trẻ em)
+    badgeTemp: document.getElementById('badge-temp'),
+    badgeHum:  document.getElementById('badge-hum'),
+    badgeCo2:  document.getElementById('badge-co2'),
+    badgePm1:  document.getElementById('badge-pm1'),
+    badgePm25: document.getElementById('badge-pm25'),
+    badgePm10: document.getElementById('badge-pm10')
 };
 
 /* Load thresholds from localStorage */
@@ -95,6 +110,118 @@ function updateAges() {
     UI.pm25Age.textContent = STATE.ages.pm25.toFixed(0);
     UI.pm10Age.textContent = STATE.ages.pm10.toFixed(0);
     UI.co2Age.textContent = STATE.ages.co2.toFixed(0);
+
+    // Cập nhật trạng thái thiết bị dựa vào age
+    updateDeviceStatus(STATE.ages.temp);
+}
+
+/* =====================================================
+   BADGE DỄ HIỂU — dành cho trẻ em & người không rành
+   ===================================================== */
+
+/* Hàm gán badge vào 1 element */
+function setBadge(el, emoji, text, color) {
+    if (!el) return;
+    el.textContent = emoji + ' ' + text;
+    el.style.background = color + '22';   // 13% opacity
+    el.style.color = color;
+    el.style.borderColor = color + '55';
+}
+
+/* NHIỆT ĐỘ */
+function updateBadgeTemp(val) {
+    const v = parseFloat(val);
+    if (isNaN(v)) return;
+    if (v < 10)       setBadge(UI.badgeTemp, '🥶', 'Rất lạnh',      '#60a5fa');
+    else if (v < 20)  setBadge(UI.badgeTemp, '❄️', 'Lạnh',           '#38bdf8');
+    else if (v < 26)  setBadge(UI.badgeTemp, '😊', 'Dễ chịu',        '#22c55e');
+    else if (v < 32)  setBadge(UI.badgeTemp, '🌤️', 'Hơi nóng',       '#f59e0b');
+    else if (v < 38)  setBadge(UI.badgeTemp, '🥵', 'Nóng',           '#f97316');
+    else              setBadge(UI.badgeTemp, '🔥', 'Rất nóng!',      '#ef4444');
+}
+
+/* ĐỘ ẨM */
+function updateBadgeHum(val) {
+    const v = parseFloat(val);
+    if (isNaN(v)) return;
+    if (v < 30)       setBadge(UI.badgeHum, '🏜️', 'Khô hanh',        '#f97316');
+    else if (v < 45)  setBadge(UI.badgeHum, '🌵', 'Hơi khô',         '#fbbf24');
+    else if (v < 65)  setBadge(UI.badgeHum, '😊', 'Thoải mái',       '#22c55e');
+    else if (v < 80)  setBadge(UI.badgeHum, '💦', 'Hơi ẩm',          '#f59e0b');
+    else              setBadge(UI.badgeHum, '🌧️', 'Rất ẩm ướt',      '#ef4444');
+}
+
+/* CO₂ */
+function updateBadgeCo2(val) {
+    const v = parseFloat(val);
+    if (isNaN(v)) return;
+    if (v <= 800)      setBadge(UI.badgeCo2, '😊', 'Không khí tốt',   '#22c55e');
+    else if (v <= 1200) setBadge(UI.badgeCo2, '🪟', 'Nên mở cửa sổ',  '#f59e0b');
+    else if (v <= 2000) setBadge(UI.badgeCo2, '😮', 'Không khí ngột',  '#f97316');
+    else                setBadge(UI.badgeCo2, '🚨', 'Nguy hiểm!',      '#ef4444');
+}
+
+/* PM1.0 */
+function updateBadgePm1(val) {
+    const v = parseFloat(val);
+    if (isNaN(v)) return;
+    if (v <= 15)       setBadge(UI.badgePm1, '✅', 'Không khí sạch',  '#22c55e');
+    else if (v <= 35)  setBadge(UI.badgePm1, '😐', 'Chấp nhận được',  '#f59e0b');
+    else if (v <= 55)  setBadge(UI.badgePm1, '😷', 'Nên đeo khẩu trang','#f97316');
+    else               setBadge(UI.badgePm1, '🚨', 'Ô nhiễm nặng!',   '#ef4444');
+}
+
+/* PM2.5 */
+function updateBadgePm25(val) {
+    const v = parseFloat(val);
+    if (isNaN(v)) return;
+    if (v <= 12)       setBadge(UI.badgePm25, '✅', 'Không khí sạch',  '#22c55e');
+    else if (v <= 35)  setBadge(UI.badgePm25, '😐', 'Chấp nhận được',  '#f59e0b');
+    else if (v <= 55)  setBadge(UI.badgePm25, '😷', 'Nên đeo khẩu trang','#f97316');
+    else if (v <= 150) setBadge(UI.badgePm25, '🚨', 'Ô nhiễm — ở trong nhà','#ef4444');
+    else               setBadge(UI.badgePm25, '☠️', 'Rất nguy hiểm!', '#7f1d1d');
+}
+
+/* PM10 */
+function updateBadgePm10(val) {
+    const v = parseFloat(val);
+    if (isNaN(v)) return;
+    if (v <= 25)       setBadge(UI.badgePm10, '✅', 'Không khí sạch',  '#22c55e');
+    else if (v <= 50)  setBadge(UI.badgePm10, '😐', 'Chấp nhận được',  '#f59e0b');
+    else if (v <= 90)  setBadge(UI.badgePm10, '😷', 'Nên đeo khẩu trang','#f97316');
+    else               setBadge(UI.badgePm10, '🚨', 'Ô nhiễm nặng!',   '#ef4444');
+}
+function updateDeviceStatus(age) {
+    if (!UI.statusDot || !UI.statusLabel) return;
+    if (age <= 60) {
+        UI.statusDot.className = 'status-dot online';
+        UI.statusLabel.textContent = 'ESP32 Online';
+    } else {
+        UI.statusDot.className = 'status-dot offline';
+        UI.statusLabel.textContent = `Mất kết nối (${age}s)`;
+    }
+}
+
+/* ---- AQI theo chuẩn WHO / Bộ TNMT Việt Nam (dựa vào PM2.5 µg/m³) ---- */
+function getAQI(pm25) {
+    if (pm25 === null || pm25 === undefined || isNaN(pm25)) return null;
+    if (pm25 <= 12)  return { level: 1, icon: '🟢', label: 'Tốt',              color: '#22c55e', detail: 'Không khí trong lành, an toàn cho mọi người.' };
+    if (pm25 <= 35)  return { level: 2, icon: '🟡', label: 'Trung bình',       color: '#eab308', detail: 'Chấp nhận được. Người nhạy cảm nên hạn chế ra ngoài lâu.' };
+    if (pm25 <= 55)  return { level: 3, icon: '🟠', label: 'Không tốt cho nhóm nhạy cảm', color: '#f97316', detail: 'Trẻ em, người già, bệnh hô hấp nên ở trong nhà.' };
+    if (pm25 <= 150) return { level: 4, icon: '🔴', label: 'Xấu',              color: '#ef4444', detail: 'Mọi người nên hạn chế hoạt động ngoài trời.' };
+    if (pm25 <= 250) return { level: 5, icon: '🟣', label: 'Rất xấu',          color: '#a855f7', detail: 'Tránh ra ngoài, đeo khẩu trang N95 nếu cần.' };
+    return             { level: 6, icon: '⚫', label: 'Nguy hại',           color: '#7f1d1d', detail: 'Khẩn cấp! Ở trong nhà, đóng cửa sổ.' };
+}
+
+function updateAQIBanner(pm25) {
+    if (!UI.aqiBanner) return;
+    const aqi = getAQI(pm25);
+    if (!aqi) return;
+    UI.aqiIcon.textContent  = aqi.icon;
+    UI.aqiLabel.textContent = `Chất lượng không khí: ${aqi.label}`;
+    UI.aqiDetail.textContent = aqi.detail;
+    UI.aqiBanner.style.borderLeftColor = aqi.color;
+    UI.aqiBanner.style.background = aqi.color + '18'; // 10% opacity
 }
 
 /* Toast notification */
