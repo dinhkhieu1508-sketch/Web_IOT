@@ -1,3 +1,25 @@
+/* Smart Y-axis: tự động co giãn theo data thực tế, có padding 10% trên/dưới */
+function smartYOptions({ min: hardMin, max: hardMax, unit }) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                suggestedMin: hardMin,
+                suggestedMax: hardMax,
+                afterDataLimits(scale) {
+                    const range = scale.max - scale.min;
+                    const pad = range * 0.12 || 1;
+                    scale.min = Math.max(hardMin, scale.min - pad);
+                    scale.max = Math.min(hardMax, scale.max + pad);
+                    // Nếu data vượt hardMax (ví dụ CO₂ đột biến) thì cho phép mở rộng
+                    if (scale.dataMax > hardMax) scale.max = scale.dataMax * 1.1;
+                }
+            }
+        }
+    };
+}
+
 /* Create line chart for sparklines */
 function makeSparkline(ctx, label, color) {
     return new Chart(ctx, {
@@ -46,7 +68,7 @@ function initCharts() {
                 tension: 0.35 
             }] 
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: smartYOptions({ min: 0, max: 60, unit: '°C' })
     });
     
     CHARTS.hum = new Chart(document.getElementById('chart-hum').getContext('2d'), {
@@ -62,7 +84,7 @@ function initCharts() {
                 tension: 0.35 
             }] 
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: smartYOptions({ min: 0, max: 100, unit: '%' })
     });
     
     CHARTS.pm1 = new Chart(document.getElementById('chart-pm1').getContext('2d'), {
@@ -78,7 +100,7 @@ function initCharts() {
                 tension: 0.35 
             }] 
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: smartYOptions({ min: 0, max: 150, unit: 'µg/m³' })
     });
     
     CHARTS.pm25 = new Chart(document.getElementById('chart-pm25').getContext('2d'), {
@@ -94,7 +116,7 @@ function initCharts() {
                 tension: 0.35 
             }] 
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: smartYOptions({ min: 0, max: 150, unit: 'µg/m³' })
     });
     
     CHARTS.pm10 = new Chart(document.getElementById('chart-pm10').getContext('2d'), {
@@ -110,7 +132,7 @@ function initCharts() {
                 tension: 0.35 
             }] 
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: smartYOptions({ min: 0, max: 200, unit: 'µg/m³' })
     });
     
     CHARTS.co2 = new Chart(document.getElementById('chart-co2').getContext('2d'), {
@@ -126,7 +148,7 @@ function initCharts() {
                 tension: 0.35 
             }] 
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: smartYOptions({ min: 300, max: 5000, unit: 'ppm' })
     });
     
     // Sparklines
