@@ -129,30 +129,6 @@ function initCharts() {
         options: { responsive: true, maintainAspectRatio: false }
     });
     
-    CHARTS.combined = new Chart(document.getElementById('chart-combined').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [
-                { label: 'PM1.0', data: [], borderColor: '#9c27b0', fill: false, tension: 0.3, yAxisID: 'y' },
-                { label: 'PM2.5', data: [], borderColor: '#8b5a2b', fill: false, tension: 0.3, yAxisID: 'y' },
-                { label: 'PM10', data: [], borderColor: '#ff9800', fill: false, tension: 0.3, yAxisID: 'y' }
-            ]
-        },
-        options: {
-            responsive: true, 
-            maintainAspectRatio: false,
-            scales: {
-                y: { 
-                    type: 'linear', 
-                    display: true, 
-                    position: 'left', 
-                    title: { display: true, text: 'Bụi mịn (µg/m³)' } 
-                }
-            }
-        }
-    });
-    
     // Sparklines
     CHARTS.sparkTemp = makeSparkline(document.getElementById('spark-temp').getContext('2d'), 't', '#ff5a5f');
     CHARTS.sparkHum = makeSparkline(document.getElementById('spark-hum').getContext('2d'), 'h', '#1e90ff');
@@ -206,12 +182,6 @@ function updateAllCharts() {
     CHARTS.co2.data.labels = labels;
     CHARTS.co2.data.datasets[0].data = series.co2;
     CHARTS.co2.update('none');
-    
-    CHARTS.combined.data.labels = labels;
-    CHARTS.combined.data.datasets[0].data = series.pm1;
-    CHARTS.combined.data.datasets[1].data = series.pm25;
-    CHARTS.combined.data.datasets[2].data = series.pm10;
-    CHARTS.combined.update('none');
     
     // Sparklines
     CHARTS.sparkTemp.data.labels = labels;
