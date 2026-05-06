@@ -73,6 +73,7 @@ function processSensorData(data) {
         UI.tempTime.textContent = timeStr;
         UI.tempAge.textContent = '0';
         STATE.latest.temp = data.temperature;
+        updateBadgeTemp(data.temperature);
     }
     
     if (data.humidity !== undefined && data.humidity !== null) {
@@ -80,6 +81,7 @@ function processSensorData(data) {
         UI.humTime.textContent = timeStr;
         UI.humAge.textContent = '0';
         STATE.latest.hum = data.humidity;
+        updateBadgeHum(data.humidity);
     }
     
     if (data.pm1_0 !== undefined && data.pm1_0 !== null) {
@@ -87,6 +89,7 @@ function processSensorData(data) {
         UI.pm1Time.textContent = timeStr;
         UI.pm1Age.textContent = '0';
         STATE.latest.pm1 = data.pm1_0;
+        updateBadgePm1(data.pm1_0);
     }
     
     if (data.pm2_5 !== undefined && data.pm2_5 !== null) {
@@ -94,6 +97,8 @@ function processSensorData(data) {
         UI.pm25Time.textContent = timeStr;
         UI.pm25Age.textContent = '0';
         STATE.latest.pm25 = data.pm2_5;
+        updateBadgePm25(data.pm2_5);
+        updateAQIBanner(data.pm2_5);
     }
     
     if (data.pm10_0 !== undefined && data.pm10_0 !== null) {
@@ -101,6 +106,7 @@ function processSensorData(data) {
         UI.pm10Time.textContent = timeStr;
         UI.pm10Age.textContent = '0';
         STATE.latest.pm10 = data.pm10_0;
+        updateBadgePm10(data.pm10_0);
     }
     
     if (data.CO2 !== undefined && data.CO2 !== null) {
@@ -108,6 +114,7 @@ function processSensorData(data) {
         UI.co2Time.textContent = timeStr;
         UI.co2Age.textContent = '0';
         STATE.latest.co2 = data.CO2;
+        updateBadgeCo2(data.CO2);
     }
     
     // Add to charts and history
